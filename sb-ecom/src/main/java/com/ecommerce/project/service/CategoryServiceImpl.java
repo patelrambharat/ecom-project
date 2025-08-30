@@ -7,9 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
+
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -32,14 +31,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public String deleteCategory(Long categoryId) {
-        List<Category> categories = categoryRepository.findAll();
-        Category category = categories.stream()
-                .filter(c -> c.getCategoryId().equals(categoryId))
-                .findFirst()
+
+        Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found!!"));
-        if(category == null){
-            return "category not found !!";
-        }
         categoryRepository.delete(category);
 
         return "category with categoryId : " +categoryId+ " deleted successfully";
@@ -47,18 +41,13 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category updateCategory(Category category, Long categoryId) {
-        List<Category> categories = categoryRepository.findAll();
-        Optional <Category> optionalCategory= categories.stream()
-                .filter(c -> c.getCategoryId().equals(categoryId))
-                .findFirst();
-        if(optionalCategory.isPresent()){
-            Category existingCategory = optionalCategory.get();
-            existingCategory.setCategoryName(category.getCategoryName());
-            Category saveCategory = categoryRepository.save(existingCategory);
-            return existingCategory;
-        }
-        else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found!!");
-        }
+
+        Category savedCategory = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, " Resource not Found !"));
+
+        category.setCategoryId(categoryId);
+
+       savedCategory = categoryRepository.save(category);
+       return savedCategory;
     }
 }
